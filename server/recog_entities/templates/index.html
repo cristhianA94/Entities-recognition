@@ -1,0 +1,109 @@
+{% extends "master.html" %}
+
+{% load static %}
+
+{% block titulo %}
+	{{ titulo }}
+{% endblock %}
+
+{% block style %}
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block contenido %}
+	<!-- Intro -->
+	<div class="row">
+		<!-- /Intro-->
+		<div class="col-xs-12 blanco textnegro">
+			<div class="row">
+				<div class="col-xs-12">
+					<h3 class="text-center">Lectura de <b>DATOS</b> del <b>RDF</b></h3>
+					<p>Visualización de los Datos recolectados del RDF.</p>
+				</div>
+				<div class="col-xs-12">
+					<section class="datatablas">
+						<table id="example" class="display" width="100%">
+							<thead>
+								<tr class="success">
+									<th>Sujeto</th>
+									<th>Predicado</th>
+									<th>Objeto</th>
+								</tr>
+							</thead>
+							<tfoot>
+								<tr class="info">
+									<th>Sujeto</th>
+									<th>Predicado</th>
+									<th>Objeto</th>
+								</tr>
+							</tfoot>
+							<tbody class="searchable">
+								{% for tripletas in datos %}
+									<tr>	
+										{% for tripleta in tripletas %}
+											<td>{{ tripleta }}</td>
+										{% endfor %}
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</section>
+				</div>
+			</div>
+		</div>
+		<div class="col-xs-12 textblanco">		
+			<div class="row">
+				<div id="palabras"></div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block script %}
+	<script type="text/Javascript" src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/Javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+
+	<script src="https://code.highcharts.com/highcharts.js"></script>
+	<script src="https://code.highcharts.com/modules/wordcloud.js"></script>
+
+
+	<script type="text/javascript">
+	    jQuery(document).ready(function ($) {
+	    	$(document).ready(function() {
+				$('#example').DataTable();
+			});
+			var text = '';
+			{% for quien in mejoresautores %}
+				text += '{{ quien.0.nombre }}'+";";
+			{% endfor %}
+			var lines = text.split(";"),
+			    data = Highcharts.reduce(lines, function (arr, word) {
+			        var obj = Highcharts.find(arr, function (obj) {
+			            return obj.name === word;
+			        });
+			        if (obj) {
+			            obj.weight += 1;
+			        } else {
+			            obj = {
+			                name: word,
+			                weight: 1
+			            };
+			            arr.push(obj);
+			        }
+			        return arr;
+			    }, []);
+
+			Highcharts.chart('palabras', {
+			    series: [{
+			        type: 'wordcloud',
+			        data: data,
+			        name: 'Occurrences'
+			    }],
+			    title: {
+			        text: 'Autores encontrados'
+			    }
+			});
+
+	    });
+	</script> 
+{% endblock %}
