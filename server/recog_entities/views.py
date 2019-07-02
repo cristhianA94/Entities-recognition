@@ -12,14 +12,14 @@ def loadindex(request):
     my_title = "Caso Arroz Verde"
     g=rdflib.Graph()
     # lee el archivo rdf
-    g.parse("Emancipada_final.rdf")
+    g.parse("arroz_verde.rdf")
 
     # crea diccionario vacio
     datos = []
     # iteracion del rdf mediante consulta sparql
     # obtiene predicado y objeto de la uri de datos de empacipada
     # Consulta de varios filtros
-    consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?s), "emancipada") .}'
+    consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?s), "arrozverde") .}'
     for row in g.query(consulta):
         tripleta = []
         # agrega datos a diccionario
