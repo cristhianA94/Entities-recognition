@@ -13,7 +13,7 @@ def loadindex(request):
     g=rdflib.Graph()
     # lee el archivo rdf
     g.parse("arroz_verde.rdf")
-    keyword = ""
+
     # crea diccionario vacio
     datos = []
     # iteracion del rdf mediante consulta sparql
@@ -25,13 +25,13 @@ def loadindex(request):
         # agrega datos a diccionario
         sujeto = row.s.split("/")
         sujeto = sujeto[len(sujeto)-1]
-        
+
         predicado = row.p.split("/")
         predicado = predicado[len(predicado)-1]
-        
+
         objeto = row.o.split("/")
         objeto = objeto[len(objeto)-1]
-        
+
         tripleta.append(sujeto)
         tripleta.append(predicado)
         tripleta.append(objeto)
@@ -39,12 +39,7 @@ def loadindex(request):
         # print(*tripleta, sep = ", ")
         datos.append(tripleta)
     print(datos)
-
-    if request.method == "POST" and 'buscar' in request.POST:
-        print("-->" + request.POST["palabraClave"])
-        keyword = request.POST["palabraClave"]
-    
-    context = {"titulo": my_title, 'datos': datos, "palabra": keyword}
+    context = {"titulo": my_title, 'datos': datos}
     # print("\033[91m {}\033[00m" .format(datos))
     return render(request, "index.html", context)
 
@@ -59,10 +54,10 @@ def identificador(request):
     # crea diccionario vacio
     data = {}
     # iteracion del rdf mediante consulta sparql
-    consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?s), "emancipada") .}'
-    for row in g.query(consulta):
-        # obtiene predicado y objeto de la uri de datos de empacipada
-        # Consulta de varios filtros
+    for row in g.query(
+            # obtiene predicado y objeto de la uri de datos de empacipada
+            # Consulta de varios filtros
+            'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?s), "emancipada") .}'):
         # agrega datos a diccionario
         data[row.p] = row.o
         # retorna json con los datos obtenidos del
