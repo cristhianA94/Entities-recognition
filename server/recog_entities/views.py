@@ -35,7 +35,8 @@ def loadindex(request):
     entidadSpacy = []
     for sentence in tokenized_sentences:
         for entity in nlp(sentence).ents:
-            consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?s), "%s") .}' % (entity.text)
+            busca = "resource/" # entity.text
+            consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?p), "%s") .}' % (busca)
             for row in g.query(consulta):
                 tripleta = []
                 entidadEncontrada = []
@@ -87,7 +88,7 @@ def identificador(request):
     # crea diccionario vacio
     data = {}
     # iteracion del rdf mediante consulta sparql
-    consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?p), "ns0") .}'
+    consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?s), "resource") .}'
     for row in g.query(consulta):
         # obtiene predicado y objeto de la uri de datos de empacipada
         # Consulta de varios filtros
