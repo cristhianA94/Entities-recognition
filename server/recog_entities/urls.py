@@ -5,4 +5,6 @@ urlpatterns = [
     url(r'^$', views.loadindex, name='home'),
     url(r'^rdf', views.identificador, name='lee'),
     url(r'^about', views.info, name='info'),
+    #  Funciones Ajax
+    url(r'ajax/$', views.buscapalabra_ajax, name='ajaxPalabra'),
 ]
