@@ -19,6 +19,7 @@ def loadindex(request):
     # lee el archivo rdf
     g.parse("arroz_verde.rdf")
     texto = ""
+    
     if request.method == "POST" and 'buscar' in request.POST:
         # print("-->" + request.POST["palabraClave"])
         texto = request.POST["palabraClave"]
@@ -31,11 +32,13 @@ def loadindex(request):
     # iteracion del rdf mediante consulta sparql
     # obtiene predicado y objeto de la uri de datos de empacipada
     # Consulta de varios filtros
+    entidadSpacy = []
     for sentence in tokenized_sentences:
         for entity in nlp(sentence).ents:
             consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?s), "%s") .}' % (entity.text)
             for row in g.query(consulta):
                 tripleta = []
+                entidadEncontrada = []
                 # sujeto = row.s.split("/")
                 # predicado = row.p.split("/")
                 # objeto = row.o.split("/")
@@ -50,7 +53,23 @@ def loadindex(request):
                 tripleta.append(predicado)
                 tripleta.append(objeto)
                 datos.append(tripleta)
+
+                sujeto = row.s.split("/")
+                sujeto = sujeto[len(sujeto)-1]
+                entidadEncontrada.append(sujeto)
+                entidadEncontrada.append(entity.label_)
+                entidadSpacy.append(entidadEncontrada)
     # print(datos)
+    ''' 
+    str = "Messi is the best soccer player"
+    "soccer" in str
+     '''
+    for entidadEncontrada in entidadSpacy:
+        # print (entidadEncontrada)
+        entidadEtiquetada = entidadEncontrada[0] + "(" + entidadEncontrada[1] + ")"
+        print("entidadEtiquetada", entidadEtiquetada)
+        texto = texto.replace(entidadEncontrada[0], entidadEtiquetada)
+    
     context = { 'my_title': my_title,
                 'texto': texto,
                 'datos': datos
@@ -68,7 +87,7 @@ def identificador(request):
     # crea diccionario vacio
     data = {}
     # iteracion del rdf mediante consulta sparql
-    consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?s), "emancipada") .}'
+    consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?p), "ns0") .}'
     for row in g.query(consulta):
         # obtiene predicado y objeto de la uri de datos de empacipada
         # Consulta de varios filtros
@@ -83,12 +102,9 @@ def buscapalabra_ajax(request):
     keyword = ""
     context = {}
     if request.is_ajax() == True:
-        # keyword = request.POST.getlist('valor')
+        # keyword = request.POST.getlist('valor')[0]
+        # print("-->AJAX\n" + request.POST.get('valor')
         keyword = request.POST.getlist('valor', False)
         print("-->AJAX\n", keyword)
-        ''' if request.method == "POST" and 'buscar' in request.POST:
-            print("-->AJAX\n" + request.POST["palabraClave"])
-            keyword = request.POST["palabraClave"] '''
-        
-        context = {"texto": keyword, "a": "Mensaje de salida"}
+    context = {"texto": keyword, "mensaje": "Mensaje de salida"}
     return JsonResponse(context, safe=False)

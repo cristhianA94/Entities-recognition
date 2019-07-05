@@ -97,28 +97,31 @@
 	    jQuery(document).ready(function ($) {
 	    	$(document).ready(function() {
 				$('#example').DataTable();
-				
+				/* 
 				setInterval(function(){
 					$valor = $('#entradaTexto').val();
 					$.ajax({
-						method:"get",
+						method:"POST",
 						url: '{% url "ajaxPalabra" %}',
 						data: {
 							'valor': $valor,
 						},
 						success:function(datos){
 							console.log("Buscando...", datos);
-							var data = jQuery.parseJSON(datos);
-							var text = jQuery.parseJSON(datos.texto);
+							var mensaje = datos.mensaje;
+							var data = datos.texto;
 							console.log("DAtos", data);
-							console.log(text);
+							console.log("mensaje", mensaje);
 							console.log("Cargando...");
-							// $("#textoPlano").text(data);
-							document.getElementById("textoPlano").innerHTML = text;
+							document.getElementById("textoPlano").innerHTML = data;
+							document.getElementById("entradaTexto").innerHTML = "";
 						}
 					});
+					// $("#entradaTexto").text("");
 				}, 5000);
-				$("#entradaTexto").text("");
+				 */
+				// var mensaje = JSON.parse(datos.mensaje);
+				// var data = jQuery.parseJSON(datos.texto);			
 			});
 	    });
 	</script> 
