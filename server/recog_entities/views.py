@@ -19,7 +19,8 @@ def loadindex(request):
     # lee el archivo rdf
     g.parse("arroz_verde.rdf")
     texto = ""
-    
+    mis_entidades = ""
+
     if request.method == "POST" and 'buscar' in request.POST:
         # print("-->" + request.POST["palabraClave"])
         texto = request.POST["palabraClave"]
@@ -34,12 +35,15 @@ def loadindex(request):
     # Consulta de varios filtros
     entidadSpacy = []
     for sentence in tokenized_sentences:
+        entidadEncontrada = []
         for entity in nlp(sentence).ents:
+            entidadEncontrada.append(entity.text)
+            entidadEncontrada.append(entity.label_)
+            entidadSpacy.append(entidadEncontrada)
             busca = "resource/" # entity.text
             consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?p), "%s") .}' % (busca)
             for row in g.query(consulta):
                 tripleta = []
-                entidadEncontrada = []
                 # sujeto = row.s.split("/")
                 # predicado = row.p.split("/")
                 # objeto = row.o.split("/")
@@ -50,33 +54,41 @@ def loadindex(request):
                 predicado = row.p
                 objeto = row.o
                 
-                tripleta.append(sujeto)
-                tripleta.append(predicado)
-                tripleta.append(objeto)
+                sujeto = sujeto.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
+                predicado = predicado.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
+                objeto = objeto.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
+                urlS = sujeto.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.12:8080/negociador/page/')
+                urlP = predicado.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.12:8080/negociador/page/')
+                urlO = objeto.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.12:8080/negociador/page/')
+                # tripleta.append(sujeto)
+                # tripleta.append(objeto)
+                tripleta.append({"valor": sujeto, "url": urlS})
+                tripleta.append({"valor": predicado, "url": urlP})
+                tripleta.append({"valor": objeto, "url": urlO})
                 datos.append(tripleta)
 
                 sujeto = row.s.split("/")
                 sujeto = sujeto[len(sujeto)-1]
-                entidadEncontrada.append(sujeto)
-                entidadEncontrada.append(entity.label_)
-                entidadSpacy.append(entidadEncontrada)
     # print(datos)
     ''' 
     str = "Messi is the best soccer player"
     "soccer" in str
      '''
+    mis_entidades = texto
     for entidadEncontrada in entidadSpacy:
         # print (entidadEncontrada)
+        entidadEncontrada[0] = entidadEncontrada[0].replace("_", " ")
         entidadEtiquetada = entidadEncontrada[0] + "(" + entidadEncontrada[1] + ")"
-        print("entidadEtiquetada", entidadEtiquetada)
-        texto = texto.replace(entidadEncontrada[0], entidadEtiquetada)
-    
-    context = { 'my_title': my_title,
-                'texto': texto,
-                'datos': datos
-            }
-    # print("\033[91m {}\033[00m" .format(datos))
+        # print("entidadEtiquetada", entidadEtiquetada)
+        mis_entidades = mis_entidades.replace(entidadEncontrada[0], entidadEtiquetada)
+    prVerde(mis_entidades)
+    context = {'my_title': my_title,
+    'texto': texto,
+    'mis_entidades': mis_entidades,
+    'datos': datos}
+    prCyan(mis_entidades)
     return render(request, "index.html", context)
+
 
 def info(request):
     return render(request, "info.html", {"title": "¿Como se trabajo?"})
@@ -109,3 +121,13 @@ def buscapalabra_ajax(request):
         print("-->AJAX\n", keyword)
     context = {"texto": keyword, "mensaje": "Mensaje de salida"}
     return JsonResponse(context, safe=False)
+
+
+def prCyan(skk):
+    print("\033[96m {}\033[00m" .format(skk))
+def prGris(skk):
+    print("\033[97m {}\033[00m" .format(skk))
+def prNegro(skk):
+    print("\033[98m {}\033[00m" .format(skk))
+def prVerde(skk):
+    print("\033[92m {}\033[00m" .format(skk))

@@ -22,18 +22,22 @@
 		</form>
 	</div>
 	<div class="row">
-		<h2 class="text-center">TEXTO TRANSFORMADO</h2>
-		<div class="col-xs-12 blanco textnegro font-peque text-justify">
-			<section>
-				<p>{{ texto }}</p>
+		<h2 class="col-xs-12 text-center">TEXTO PLANO</h2>
+		<div class="col-xs-12 gris textnegro font-peque text-justify">
+			<section class="row">
+				<p class="col-xs-12" id="textoPlano">
+					{{ texto }}
+				</p>
 			</section>
 		</div>
 	</div>
 	<div class="row">
-		<h2 class="col-xs-12 text-center">TEXTO PLANO</h2>
-		<div class="col-xs-12 gris textnegro font-peque text-justify">
-			<section class="row">
-				<p class="col-xs-12" id="textoPlano"></p>
+		<h2 class="text-center">TEXTO TRANSFORMADO</h2>
+		<div class="col-xs-12 blanco textnegro font-peque text-justify">
+			<section>
+				<p>
+					{{ mis_entidades }}
+				</p>
 			</section>
 		</div>
 	</div>
@@ -60,7 +64,7 @@
 								{% for tripletas in datos %}
 									<tr>	
 										{% for tripleta in tripletas %}
-											<td>{{ tripleta }}</td>
+											<td><a href="{{ tripleta.url }}">{{ tripleta.valor }}</a></td>
 										{% endfor %}
 									</tr>
 								{% endfor %}
