@@ -16,7 +16,7 @@
 			{% csrf_token %}
 			<div class="form-group">
 				<label for="textarea">Texto</label>
-				<textarea class="form-control" id="entradaTexto" rows="3" name="palabraClave"></textarea>
+				<textarea class="form-control" id="entradaTexto" rows="5" name="palabraClave"></textarea>
 			</div>
 			<button class="btn btn-primary mb-12 text-center" id="buscarbtn" type="submit" name="buscar">Buscar</button>
 		</form>
@@ -32,7 +32,7 @@
 		</div>
 	</div>
 	<div class="row">
-		<h2 class="text-center">TEXTO TRANSFORMADO</h2>
+		<h2 class="text-center">Reconocimiento de entidades de SpaCy</h2>
 		<div class="col-xs-12 blanco textnegro font-peque text-justify">
 			<section>
 				<p>
@@ -47,7 +47,7 @@
 		<div class="col-xs-12 blanco textnegro">
 			<div class="row">
 				<div class="col-xs-12">
-					<h3 class="text-center">Lectura de <b>DATOS</b> del <b>RDF</b></h3>
+					<h3 class="text-center">Consulta SPARQL del <b>RDF</b> sobre las <b>entidades encontradas</b>.</h3>
 					<p>Visualización de los Datos recolectados del RDF.</p>
 				</div>
 				<div class="col-xs-12">

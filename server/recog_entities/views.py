@@ -18,75 +18,108 @@ def loadindex(request):
     g=rdflib.Graph()
     # lee el archivo rdf
     g.parse("arroz_verde.rdf")
+    g.parse("ontology_arrozverde.rdf")
+    prueba = "El caso 'receta de arroz verde 502' es una investigación publicada por el portal digital Mil Hojas. El portal digital reveló un correo electrónico recibido por Pamela Martínez —supuesta asesora del expresidente Rafael Correa según Mil Hojas— con un documento titulado ‘receta de arroz verde 502’.  Según la investigación, el remitente del correo electrónico sería Geraldo Luiz Pereira de Souza- encargado de la administración y finanzas de Odebrecht en Ecuador. El mail demuestra presuntos aportes entregados por empresas multinacionales —como Odebrecht— al movimiento Alianza País desde noviembre de 2013 a febrero de 2014—periodo en el que el expresidente Rafael Correa lideraba esa organización política. Según Mil Hojas, las donaciones alcanzarían los 11,6 millones de dólares. Las empresas que habrían realizado los aportes son: Constructora Norberto Odebrecht, SK Engineering & Construction, Sinohydro Corporation, Grupo Azul, Telconet, China International Water & Electric Corp-CWE."
+    prNegro(prueba)
     texto = ""
     mis_entidades = ""
-
+    nlp = es_core_news_sm.load()
     if request.method == "POST" and 'buscar' in request.POST:
         # print("-->" + request.POST["palabraClave"])
         texto = request.POST["palabraClave"]
-    nlp = es_core_news_sm.load()
+        texto = texto.replace("-", "")
+        texto = texto.replace("—", "")
+        texto = texto.replace("_", "")
+        texto = texto.replace("á", "a")
+        texto = texto.replace("é", "e")
+        texto = texto.replace("í", "i")
+        texto = texto.replace("ó", "o")
+        texto = texto.replace("ú", "u")
+    
     text = nlp(texto)
     tokenized_sentences = [sentence.text for sentence in text.sents]
-    # print(tokenized_sentences)
     # crea diccionario vacio
     datos = []
     # iteracion del rdf mediante consulta sparql
     # obtiene predicado y objeto de la uri de datos de empacipada
     # Consulta de varios filtros
     entidadSpacy = []
+    etiquetaEtiquetada = []
     for sentence in tokenized_sentences:
-        entidadEncontrada = []
         for entity in nlp(sentence).ents:
-            entidadEncontrada.append(entity.text)
-            entidadEncontrada.append(entity.label_)
-            entidadSpacy.append(entidadEncontrada)
-            busca = "resource/" # entity.text
-            consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?p), "%s") .}' % (busca)
-            for row in g.query(consulta):
-                tripleta = []
-                # sujeto = row.s.split("/")
-                # predicado = row.p.split("/")
-                # objeto = row.o.split("/")
-                # sujeto = sujeto[len(sujeto)-1]
-                # predicado = predicado[len(predicado)-1]
-                # objeto = objeto[len(objeto)-1]
-                sujeto = row.s
-                predicado = row.p
-                objeto = row.o
-                
-                sujeto = sujeto.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
-                predicado = predicado.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
-                objeto = objeto.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
-                urlS = sujeto.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.12:8080/negociador/page/')
-                urlP = predicado.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.12:8080/negociador/page/')
-                urlO = objeto.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.12:8080/negociador/page/')
-                # tripleta.append(sujeto)
-                # tripleta.append(objeto)
-                tripleta.append({"valor": sujeto, "url": urlS})
-                tripleta.append({"valor": predicado, "url": urlP})
-                tripleta.append({"valor": objeto, "url": urlO})
-                datos.append(tripleta)
+            entidadSpacy.append(entity.text)
+    # Eliminando duplicados en las listas, sin perder el orden
+    entidadSpacy = list(set(entidadSpacy))
+    
+    for sentence in entidadSpacy:
+        for entity in nlp(sentence).ents:
+            etiquetaEtiquetada.append(entity.label_)
+            # prGris(entity.label_)
+    
+    for entidadEncontrada in entidadSpacy:
+        busca = entidadEncontrada # -Entidad 1 Etiqueta
+        # prGris(busca)
+        # PREFIX cavr: <http://data.utpl.edu.ec/arrozverde/resource/>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s ?p ?o WHERE{{{ ?s ?p ?o. }FILTER (?p = cavr:type).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombre).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:apellido).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombreEmpresa).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombrePais).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:autoriza).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoPersona).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoEmpresa).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoPais).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:liderImplicado).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:involucrada).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, rdfs:label).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, rdfs:comment).FILTER regex(str(?p), "%s").}}
+        consulta = 'PREFIX cavr: <http://data.utpl.edu.ec/arrozverde/resource/>\n'
+        consulta = consulta + 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n'
+        consulta = consulta + 'SELECT ?s ?p ?o WHERE{{{ ?s ?p ?o. }FILTER (?p = cavr:type).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombre).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:apellido).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombreEmpresa).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombrePais).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:autoriza).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoPersona).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoEmpresa).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoPais).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:liderImplicado).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:involucrada).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, rdfs:label).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, rdfs:comment).FILTER regex(str(?p), "%s").}}' % (busca, busca, busca, busca, busca, busca, busca, busca, busca)
+        # consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?p), "%s") .}' % (busca)
+        # prVerde(consulta)
+        for row in g.query(consulta):
+            tripleta = []
+            # sujeto = row.s.split("/")
+            # predicado = row.p.split("/")
+            # objeto = row.o.split("/")
+            # sujeto = sujeto[len(sujeto)-1]
+            # predicado = predicado[len(predicado)-1]
+            # objeto = objeto[len(objeto)-1]
+            sujeto = row.s
+            predicado = row.p
+            objeto = row.o
+            
+            sujeto = sujeto.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
+            predicado = predicado.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
+            objeto = objeto.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
+            urlS = sujeto.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.5:8080/negociador/page/')
+            urlP = predicado.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.5:8080/negociador/page/')
+            urlO = objeto.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.5:8080/negociador/page/')
 
-                sujeto = row.s.split("/")
-                sujeto = sujeto[len(sujeto)-1]
+            tripleta.append({"valor": sujeto, "url": urlS})
+            tripleta.append({"valor": predicado, "url": urlP})
+            tripleta.append({"valor": objeto, "url": urlO})
+            datos.append(tripleta)
+    prAzul(consulta)
     # print(datos)
     ''' 
     str = "Messi is the best soccer player"
     "soccer" in str
      '''
     mis_entidades = texto
+    prVerde(len(entidadSpacy))
+    prVerde(len(etiquetaEtiquetada))
     for entidadEncontrada in entidadSpacy:
-        # print (entidadEncontrada)
-        entidadEncontrada[0] = entidadEncontrada[0].replace("_", " ")
-        entidadEtiquetada = entidadEncontrada[0] + "(" + entidadEncontrada[1] + ")"
-        # print("entidadEtiquetada", entidadEtiquetada)
-        mis_entidades = mis_entidades.replace(entidadEncontrada[0], entidadEtiquetada)
-    prVerde(mis_entidades)
-    context = {'my_title': my_title,
-    'texto': texto,
-    'mis_entidades': mis_entidades,
-    'datos': datos}
-    prCyan(mis_entidades)
+        prCyan(entidadEncontrada)
+    for entidadEncontrada in etiquetaEtiquetada:
+        prGris(entidadEncontrada)
+    for entidadEncontrada in entidadSpacy:
+        indice = entidadSpacy.index(entidadEncontrada)
+        prNegro(indice)
+        if indice == len(entidadSpacy)-1:
+            break
+        else:
+            etiqueta = etiquetaEtiquetada[indice]
+        # prUnder(entidadEncontrada)
+        prIN(entidadEncontrada, etiqueta)
+        entidadEtiquetada = entidadEncontrada + " (" + etiqueta + ")"
+        mis_entidades = mis_entidades.replace(entidadEncontrada, entidadEtiquetada)
+    prAzul(mis_entidades)
+    context = {
+        'my_title': my_title,
+        'texto': texto,
+        'mis_entidades': mis_entidades,
+        'datos': datos
+    }
+    
     return render(request, "index.html", context)
 
 
@@ -131,3 +164,11 @@ def prNegro(skk):
     print("\033[98m {}\033[00m" .format(skk))
 def prVerde(skk):
     print("\033[92m {}\033[00m" .format(skk))
+def prAzul(skk):
+    print("\033[94m {}\033[00m" .format(skk))
+def prUnder(skk):
+    print("\033[4m {}\033[00m" .format(skk))
+def prBold(skk):
+    print("\033[1m {}\033[00m" .format(skk))
+def prIN(a, b):
+    print("\033[92m \033[94m %s \t\t %s" % (format(a), format(b)))
