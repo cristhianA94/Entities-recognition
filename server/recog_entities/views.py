@@ -18,9 +18,9 @@ def loadindex(request):
     g=rdflib.Graph()
     # lee el archivo rdf
     g.parse("arroz_verde.rdf")
-    g.parse("ontology_arrozverde.rdf")
+    # g.parse("ontology_arrozverde.rdf")
     prueba = "El caso 'receta de arroz verde 502' es una investigación publicada por el portal digital Mil Hojas. El portal digital reveló un correo electrónico recibido por Pamela Martínez —supuesta asesora del expresidente Rafael Correa según Mil Hojas— con un documento titulado ‘receta de arroz verde 502’.  Según la investigación, el remitente del correo electrónico sería Geraldo Luiz Pereira de Souza- encargado de la administración y finanzas de Odebrecht en Ecuador. El mail demuestra presuntos aportes entregados por empresas multinacionales —como Odebrecht— al movimiento Alianza País desde noviembre de 2013 a febrero de 2014—periodo en el que el expresidente Rafael Correa lideraba esa organización política. Según Mil Hojas, las donaciones alcanzarían los 11,6 millones de dólares. Las empresas que habrían realizado los aportes son: Constructora Norberto Odebrecht, SK Engineering & Construction, Sinohydro Corporation, Grupo Azul, Telconet, China International Water & Electric Corp-CWE."
-    prNegro(prueba)
+    prIN("Texto de prueba\n", prueba)
     texto = ""
     mis_entidades = ""
     consulta = ""
@@ -60,11 +60,9 @@ def loadindex(request):
     for entidadEncontrada in entidadSpacy:
         busca = entidadEncontrada # -Entidad 1 Etiqueta
         # prGris(busca)
-        # PREFIX cavr: <http://data.utpl.edu.ec/arrozverde/resource/>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?s ?p ?o WHERE{{{ ?s ?p ?o. }FILTER (?p = cavr:type).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombre).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:apellido).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombreEmpresa).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombrePais).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:autoriza).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoPersona).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoEmpresa).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoPais).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:liderImplicado).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:involucrada).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, rdfs:label).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, rdfs:comment).FILTER regex(str(?p), "%s").}}
         consulta = 'PREFIX cavr: <http://data.utpl.edu.ec/arrozverde/resource/>\n'
         consulta = consulta + 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n'
-        consulta = consulta + 'SELECT ?s ?p ?o WHERE{{{ ?s ?p ?o. }FILTER (?p = cavr:type).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombre).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:apellido).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombreEmpresa).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:nombrePais).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:autoriza).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoPersona).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoEmpresa).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:codigoPais).}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:liderImplicado).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, cavr:involucrada).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, rdfs:label).FILTER regex(str(?p), "%s").}UNION{{?s ?p ?o. }FILTER regex(?p, rdfs:comment).FILTER regex(str(?p), "%s").}}' % (busca, busca, busca, busca, busca, busca, busca, busca, busca)
-        # consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?p), "%s") .}' % (busca)
+        consulta = consulta + 'SELECT DISTINCT ?s ?p ?o WHERE { { {?s ?p ?o .} FILTER (?p = cavr:type). } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:nombre "%s"}. } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:apellido "%s"}. } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:nombreEmpresa "%s"}. } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:nombrePais "%s"}. } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:nombrePais "%s"}. } UNION { {?s ?p ?o .} FILTER(?p = cavr:codigoPersona). } UNION { {?s ?p ?o .} FILTER(?p = cavr:codigoEmpresa). } UNION { {?s ?p ?o .} FILTER(?p = cavr:codigoPais). } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:liderImplicado "%s"}. } UNION { {?s ?p ?o. } OPTIONAL{?s cavr:involucrada "%s"}. } UNION { {?s ?p ?o. } OPTIONAL{?s rdfs:label "%s"}. } UNION { {?s ?p ?o. } OPTIONAL{?s rdfs:comment "%s"}. } }' % (busca, busca, busca, busca, busca, busca, busca, busca, busca)
         # prVerde(consulta)
         for row in g.query(consulta):
             tripleta = []
@@ -84,7 +82,7 @@ def loadindex(request):
             urlS = sujeto.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.5:8080/negociador/page/')
             urlP = predicado.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.5:8080/negociador/page/')
             urlO = objeto.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.5:8080/negociador/page/')
-
+            
             tripleta.append({"valor": sujeto, "url": urlS})
             tripleta.append({"valor": predicado, "url": urlP})
             tripleta.append({"valor": objeto, "url": urlO})
@@ -98,22 +96,24 @@ def loadindex(request):
     mis_entidades = texto
     prVerde(len(entidadSpacy))
     prVerde(len(etiquetaEtiquetada))
-    for entidadEncontrada in entidadSpacy:
-        prCyan(entidadEncontrada)
-    for entidadEncontrada in etiquetaEtiquetada:
-        prGris(entidadEncontrada)
+
+    # for entidadEncontrada in entidadSpacy:
+    #     prCyan(entidadEncontrada)
+    # for entidadEncontrada in etiquetaEtiquetada:
+    #     prGris(entidadEncontrada)
+    
     for entidadEncontrada in entidadSpacy:
         indice = entidadSpacy.index(entidadEncontrada)
-        prNegro(indice)
+        # prNegro(indice)
         if indice == len(entidadSpacy)-1:
             break
         else:
             etiqueta = etiquetaEtiquetada[indice]
         # prUnder(entidadEncontrada)
-        prIN(entidadEncontrada, etiqueta)
+        # prIN(entidadEncontrada, etiqueta)
         entidadEtiquetada = entidadEncontrada + " (" + etiqueta + ")"
         mis_entidades = mis_entidades.replace(entidadEncontrada, entidadEtiquetada)
-    prAzul(mis_entidades)
+    # prAzul(mis_entidades)
     context = {
         'my_title': my_title,
         'texto': texto,
