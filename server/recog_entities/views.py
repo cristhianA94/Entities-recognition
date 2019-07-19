@@ -23,6 +23,7 @@ def loadindex(request):
     prNegro(prueba)
     texto = ""
     mis_entidades = ""
+    consulta = ""
     nlp = es_core_news_sm.load()
     if request.method == "POST" and 'buscar' in request.POST:
         # print("-->" + request.POST["palabraClave"])
