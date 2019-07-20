@@ -15,7 +15,7 @@ import es_core_news_sm
 
 def loadindex(request):
     my_title = "Caso Arroz Verde"
-    g=rdflib.Graph()
+    g = rdflib.Graph()
     # lee el archivo rdf
     g.parse("arroz_verde.rdf")
     # g.parse("ontology_arrozverde.rdf")
@@ -36,7 +36,7 @@ def loadindex(request):
         texto = texto.replace("í", "i")
         texto = texto.replace("ó", "o")
         texto = texto.replace("ú", "u")
-    
+
     text = nlp(texto)
     tokenized_sentences = [sentence.text for sentence in text.sents]
     # crea diccionario vacio
@@ -51,14 +51,14 @@ def loadindex(request):
             entidadSpacy.append(entity.text)
     # Eliminando duplicados en las listas, sin perder el orden
     entidadSpacy = list(set(entidadSpacy))
-    
+
     for sentence in entidadSpacy:
         for entity in nlp(sentence).ents:
             etiquetaEtiquetada.append(entity.label_)
             # prGris(entity.label_)
-    
+
     for entidadEncontrada in entidadSpacy:
-        busca = entidadEncontrada # -Entidad 1 Etiqueta
+        busca = entidadEncontrada  # -Entidad 1 Etiqueta
         # prGris(busca)
         consulta = 'PREFIX cavr: <http://data.utpl.edu.ec/arrozverde/resource/>\n'
         consulta = consulta + 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n'
@@ -75,17 +75,9 @@ def loadindex(request):
             sujeto = row.s
             predicado = row.p
             objeto = row.o
-            
-            sujeto = sujeto.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
-            predicado = predicado.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
-            objeto = objeto.replace('http://data.utpl.edu.ec/arrozverde/', 'http://localhost:8080/negociador/')
-            urlS = sujeto.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.5:8080/negociador/page/')
-            urlP = predicado.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.5:8080/negociador/page/')
-            urlO = objeto.replace('http://data.utpl.edu.ec/arrozverde/resource/', 'http://192.168.1.5:8080/negociador/page/')
-            
-            tripleta.append({"valor": sujeto, "url": urlS})
-            tripleta.append({"valor": predicado, "url": urlP})
-            tripleta.append({"valor": objeto, "url": urlO})
+            tripleta.append({"valor": sujeto, "url": sujeto})
+            tripleta.append({"valor": predicado, "url": predicado})
+            tripleta.append({"valor": objeto, "url": objeto})
             datos.append(tripleta)
     prAzul(consulta)
     # print(datos)
@@ -101,7 +93,7 @@ def loadindex(request):
     #     prCyan(entidadEncontrada)
     # for entidadEncontrada in etiquetaEtiquetada:
     #     prGris(entidadEncontrada)
-    
+
     for entidadEncontrada in entidadSpacy:
         indice = entidadSpacy.index(entidadEncontrada)
         # prNegro(indice)
@@ -112,7 +104,8 @@ def loadindex(request):
         # prUnder(entidadEncontrada)
         # prIN(entidadEncontrada, etiqueta)
         entidadEtiquetada = entidadEncontrada + " (" + etiqueta + ")"
-        mis_entidades = mis_entidades.replace(entidadEncontrada, entidadEtiquetada)
+        mis_entidades = mis_entidades.replace(
+            entidadEncontrada, entidadEtiquetada)
     # prAzul(mis_entidades)
     context = {
         'my_title': my_title,
@@ -120,15 +113,16 @@ def loadindex(request):
         'mis_entidades': mis_entidades,
         'datos': datos
     }
-    
+
     return render(request, "index.html", context)
 
 
 def info(request):
     return render(request, "info.html", {"title": "¿Como se trabajo?"})
 
+
 def identificador(request):
-    g=rdflib.Graph()
+    g = rdflib.Graph()
     # lee el archivo rdf
     g.parse("Emancipada_final.rdf")
     # crea diccionario vacio
@@ -159,17 +153,31 @@ def buscapalabra_ajax(request):
 
 def prCyan(skk):
     print("\033[96m {}\033[00m" .format(skk))
+
+
 def prGris(skk):
     print("\033[97m {}\033[00m" .format(skk))
+
+
 def prNegro(skk):
     print("\033[98m {}\033[00m" .format(skk))
+
+
 def prVerde(skk):
     print("\033[92m {}\033[00m" .format(skk))
+
+
 def prAzul(skk):
     print("\033[94m {}\033[00m" .format(skk))
+
+
 def prUnder(skk):
     print("\033[4m {}\033[00m" .format(skk))
+
+
 def prBold(skk):
     print("\033[1m {}\033[00m" .format(skk))
+
+
 def prIN(a, b):
     print("\033[92m \033[94m %s \t\t %s" % (format(a), format(b)))
