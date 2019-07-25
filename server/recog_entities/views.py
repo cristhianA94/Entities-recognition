@@ -6,114 +6,160 @@ from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
 
 from django.http import JsonResponse
-import rdflib
 from rdflib.serializer import Serializer
+from collections import OrderedDict
+from SPARQLWrapper import SPARQLWrapper, JSON
 # spacy
 import spacy
 import es_core_news_sm
 
 
 def loadindex(request):
-    my_title = "Caso Arroz Verde"
-    g = rdflib.Graph()
-    # lee el archivo rdf
-    g.parse("arroz_verde.rdf")
-    # g.parse("ontology_arrozverde.rdf")
-    prueba = "El caso 'receta de arroz verde 502' es una investigación publicada por el portal digital Mil Hojas. El portal digital reveló un correo electrónico recibido por Pamela Martínez —supuesta asesora del expresidente Rafael Correa según Mil Hojas— con un documento titulado ‘receta de arroz verde 502’.  Según la investigación, el remitente del correo electrónico sería Geraldo Luiz Pereira de Souza- encargado de la administración y finanzas de Odebrecht en Ecuador. El mail demuestra presuntos aportes entregados por empresas multinacionales —como Odebrecht— al movimiento Alianza País desde noviembre de 2013 a febrero de 2014—periodo en el que el expresidente Rafael Correa lideraba esa organización política. Según Mil Hojas, las donaciones alcanzarían los 11,6 millones de dólares. Las empresas que habrían realizado los aportes son: Constructora Norberto Odebrecht, SK Engineering & Construction, Sinohydro Corporation, Grupo Azul, Telconet, China International Water & Electric Corp-CWE."
-    prIN("Texto de prueba\n", prueba)
-    texto = ""
-    mis_entidades = ""
-    consulta = ""
+    # Carga lenguaje español Spacy
     nlp = es_core_news_sm.load()
-    if request.method == "POST" and 'buscar' in request.POST:
-        # print("-->" + request.POST["palabraClave"])
-        texto = request.POST["palabraClave"]
-        texto = texto.replace("-", "")
-        texto = texto.replace("—", "")
-        texto = texto.replace("_", "")
-        texto = texto.replace("á", "a")
-        texto = texto.replace("é", "e")
-        texto = texto.replace("í", "i")
-        texto = texto.replace("ó", "o")
-        texto = texto.replace("ú", "u")
 
-    text = nlp(texto)
-    tokenized_sentences = [sentence.text for sentence in text.sents]
-    # crea diccionario vacio
+    my_title = "Caso Arroz Verde"
+    texto = ""
+    prueba = "El caso Arroz Verde es una investigación publicada por el portal digital Mil Hojas. El portal digital reveló un correo electrónico recibido por Pamela Martínez supuesta asesora del expresidente Rafael Correa según Mil Hoja con un documento titulado Receta de Arroz Verde 502.  Según la investigación, el remitente del correo electrónico sería Geraldo Luiz Pereira de Souza, encargado de la administración y finanzas de Odebrecht en Ecuador. El mail demuestra presuntos aportes entregados por empresas multinacionales como Odebrecht al movimiento Alianza País desde noviembre de 2013 a febrero de 201 periodo en el que el expresidente Rafael Correa lideraba esa organización política. Según, Mil Hojas, las donaciones alcanzarían los 11,6 millones de dólares. Las empresas que habrían realizado los aportes son: Constructora Norberto Odebrecht, SK Engineering & Construction, Sinohydro Corporation, Grupo Azul, Telconet, China International Water & Electric Corp-CWE."
     datos = []
-    # iteracion del rdf mediante consulta sparql
-    # obtiene predicado y objeto de la uri de datos de empacipada
-    # Consulta de varios filtros
+
+    # Endpoint con Virtuoso
+    sbcEndpoint = SPARQLWrapper("http://localhost:8890/sparql/")
+    # Se carga el texto de prueba
+    if request.method == "POST" and 'prueba' in request.POST:
+        texto = prueba
+    # Obtiene el texto de entrada
+    if request.method == "POST" and 'buscar' in request.POST:
+        texto = request.POST["palabraClave"]
+
+    texto = limpiarDatos(texto)
+    text = nlp(texto)
+    # Tokeniza la entrada de texto con Spacy
+    tokenized_sentences = [sentence.text for sentence in text.sents]
+
     entidadSpacy = []
-    etiquetaEtiquetada = []
+    # Reconocimiento de entidades con Spacy
     for sentence in tokenized_sentences:
         for entity in nlp(sentence).ents:
             entidadSpacy.append(entity.text)
     # Eliminando duplicados en las listas, sin perder el orden
     entidadSpacy = list(set(entidadSpacy))
 
+    etiquetaEntidad = []
+    # Etiqueta de las entidades
     for sentence in entidadSpacy:
         for entity in nlp(sentence).ents:
-            etiquetaEtiquetada.append(entity.label_)
-            # prGris(entity.label_)
+            prVerde(entity.text)
+            etiquetaEntidad.append(entity.label_)
 
-    for entidadEncontrada in entidadSpacy:
-        busca = entidadEncontrada  # -Entidad 1 Etiqueta
+    palabras_limpias = []
+    # Limpieza de datos de las entidades
+    for enti in entidadSpacy:
+        palabra = enti  # -Entidad 1 Etiqueta
+        palabra = palabra.replace(' ', '_')
+        palabra = palabra.replace('—', '')
+        palabra = palabra.replace('á', 'a')
+        palabra = palabra.replace('é', 'e')
+        palabra = palabra.replace('í', 'i')
+        palabra = palabra.replace('ó', 'o')
+        palabra = palabra.replace('ú', 'u')
+        palabras_limpias.append(palabra)
+
+        """
+        PREFIX cavr: <http://localhost:8080/negociador/page>
+        PREFIX owl: <http://www.w3.org/2002/07/owl#>
+        SELECT DISTINCT ?s ?p ?o
+        OPTIONAL{?s cavr:nombre "Pamela" ;
+        FROM <http://localhost:8890/SBC>
+        WHERE
+        {
+        ?s ?p ?o .
+                    cavr:apellido "Pamela" ;
+                    cavr:nombrePartido "Pamela" ;
+                    cavr:nombreEmpresa "Pamela" ;
+                    cavr:nombrePais "Pamela" ;
+                    cavr:liderImplicado "Pamela" ;
+                    cavr:involucrada "Pamela" ;
+                    cavr:autoriza "Pamela" ;
+                    cavr:nombradoPor "Pamela" .}
+        OPTIONAL{?a rdf:rest ?o ;
+                    rdf:first ?o ;
+                    rdfs:subPropertyOf ?o ;
+                    owl:members ?o ;
+                    rdf:type owl:Class ;
+                    rdf:type owl:Ontology ;
+                    rdf:type owl:ObjectProperty ;
+                    rdf:type owl:DatatypeProperty ;
+                    rdf:type owl:AsymmetricProperty ;
+                    rdf:type owl:AllDisjointClasses ;
+                    rdf:type owl:AllDisjointProperties .}
+        OPTIONAL{?s rdfs:label "Pamela" .}
+        OPTIONAL{?s rdfs:comment "Pamela" .}
+        }
+        """
+        # Consulta SPARQL para buscar en la BD la entidad encontrada
+        consulta = """
+            SELECT ?s ?p ?o
+            FROM <http://localhost:8890/SBC>
+            WHERE 
+            { 
+                ?s ?p ?o .FILTER (regex(str(?s), "%s") || regex(str(?o), "%s")) .
+            }
+            """ % (palabra, palabra)
+        print("Palabra: ", palabra)
         # prGris(busca)
-        consulta = 'PREFIX cavr: <http://data.utpl.edu.ec/arrozverde/resource/>\n'
-        consulta = consulta + 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n'
-        consulta = consulta + 'SELECT DISTINCT ?s ?p ?o WHERE { { {?s ?p ?o .} FILTER (?p = cavr:type). } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:nombre "%s"}. } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:apellido "%s"}. } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:nombreEmpresa "%s"}. } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:nombrePais "%s"}. } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:nombrePais "%s"}. } UNION { {?s ?p ?o .} FILTER(?p = cavr:codigoPersona). } UNION { {?s ?p ?o .} FILTER(?p = cavr:codigoEmpresa). } UNION { {?s ?p ?o .} FILTER(?p = cavr:codigoPais). } UNION { {?s ?p ?o .} OPTIONAL{?s cavr:liderImplicado "%s"}. } UNION { {?s ?p ?o. } OPTIONAL{?s cavr:involucrada "%s"}. } UNION { {?s ?p ?o. } OPTIONAL{?s rdfs:label "%s"}. } UNION { {?s ?p ?o. } OPTIONAL{?s rdfs:comment "%s"}. } }' % (busca, busca, busca, busca, busca, busca, busca, busca, busca)
-        # prVerde(consulta)
-        for row in g.query(consulta):
-            tripleta = []
-            # sujeto = row.s.split("/")
-            # predicado = row.p.split("/")
-            # objeto = row.o.split("/")
-            # sujeto = sujeto[len(sujeto)-1]
-            # predicado = predicado[len(predicado)-1]
-            # objeto = objeto[len(objeto)-1]
-            sujeto = row.s
-            predicado = row.p
-            objeto = row.o
-            tripleta.append({"valor": sujeto, "url": sujeto})
-            tripleta.append({"valor": predicado, "url": predicado})
-            tripleta.append({"valor": objeto, "url": objeto})
-            datos.append(tripleta)
-    prAzul(consulta)
-    # print(datos)
-    ''' 
-    str = "Messi is the best soccer player"
-    "soccer" in str
-     '''
+        # Ejecuta la consulta en el Endpoint de Virtuoso
+        sbcEndpoint.setQuery(consulta)
+        # Retorna en datos JSON
+        sbcEndpoint.setReturnFormat(JSON)
+        results = sbcEndpoint.query().convert()
+        print(results)
+        # Dentro del JSON en el atriibuto "results" con el atributo "bindings"
+        # Lectura de JSON y division en tripletas
+        for result in results["results"]["bindings"]:
+            lista = []
+            listaS = result["s"]["value"]
+            listaP = result["p"]["value"]
+            listaO = result["o"]["value"]
+            lista.append(listaS)
+            lista.append(listaP)
+            lista.append(listaO)
+            datos.append(lista)
+    # Elimina tripletas duplicadas
+    datos = OrderedDict((tuple(x), x) for x in datos).values()
+
+    print(len(entidadSpacy))
+    print(len(etiquetaEntidad))
+    # prVerde(len(entidadSpacy))
+    # prVerde(len(etiquetaEntidad))
+    # Valor del texto de entrada
     mis_entidades = texto
-    prVerde(len(entidadSpacy))
-    prVerde(len(etiquetaEtiquetada))
 
-    # for entidadEncontrada in entidadSpacy:
-    #     prCyan(entidadEncontrada)
-    # for entidadEncontrada in etiquetaEtiquetada:
-    #     prGris(entidadEncontrada)
+    print("---------------------------------")
+    print(palabras_limpias)
 
-    for entidadEncontrada in entidadSpacy:
-        indice = entidadSpacy.index(entidadEncontrada)
-        # prNegro(indice)
-        if indice == len(entidadSpacy)-1:
+    # Imprimir texto con etiquetas de entidades de Spacy
+    for enti in palabras_limpias:
+        # Saca el indice de cada palabra del arreglo
+        indice = palabras_limpias.index(enti)
+        if indice == len(palabras_limpias):
             break
         else:
-            etiqueta = etiquetaEtiquetada[indice]
+            entidadEtiquetada = '<a class="btn btn-success btn-sm" href="http://localhost:8080/negociador/page/' + \
+                enti + '" role="button">'+entidadSpacy[indice]+"</a>"
         # prUnder(entidadEncontrada)
         # prIN(entidadEncontrada, etiqueta)
-        entidadEtiquetada = entidadEncontrada + " (" + etiqueta + ")"
         mis_entidades = mis_entidades.replace(
-            entidadEncontrada, entidadEtiquetada)
-    # prAzul(mis_entidades)
+            entidadSpacy[indice], entidadEtiquetada)
+
+    prAzul(datos)
+    # Diccionario visualizacion en template
     context = {
         'my_title': my_title,
         'texto': texto,
         'mis_entidades': mis_entidades,
         'datos': datos
     }
-
     return render(request, "index.html", context)
 
 
@@ -121,34 +167,27 @@ def info(request):
     return render(request, "info.html", {"title": "¿Como se trabajo?"})
 
 
-def identificador(request):
-    g = rdflib.Graph()
-    # lee el archivo rdf
-    g.parse("Emancipada_final.rdf")
-    # crea diccionario vacio
-    data = {}
-    # iteracion del rdf mediante consulta sparql
-    consulta = 'SELECT ?s ?p ?o  WHERE { ?s ?p ?o .FILTER regex(str(?s), "resource") .}'
-    for row in g.query(consulta):
-        # obtiene predicado y objeto de la uri de datos de empacipada
-        # Consulta de varios filtros
-        # agrega datos a diccionario
-        data[row.p] = row.o
-        # retorna json con los datos obtenidos del
-    return JsonResponse(data)
+def page_not_found(request):
+    # Dict to pass to template, data could come from DB query
+    mensaje = "No se pudo localizar el recurso buscado compruebe la ruta una vez, en caso de estar en lo correcto; corregiremos el inconveniente."
+    values_for_template = {"error": mensaje}
+    return render(request, '404.html', values_for_template, status=404)
 
 
-@csrf_exempt
-def buscapalabra_ajax(request):
-    keyword = ""
-    context = {}
-    if request.is_ajax() == True:
-        # keyword = request.POST.getlist('valor')[0]
-        # print("-->AJAX\n" + request.POST.get('valor')
-        keyword = request.POST.getlist('valor', False)
-        print("-->AJAX\n", keyword)
-    context = {"texto": keyword, "mensaje": "Mensaje de salida"}
-    return JsonResponse(context, safe=False)
+def limpiarDatos(palabra):
+    palabra = str(palabra)
+    # print('***'*10)
+    # print(palabra)
+    # palabra = palabra.replace("-", "")
+    palabra = palabra.replace('—', '')
+    palabra = palabra.replace('á', 'a')
+    palabra = palabra.replace('é', 'e')
+    palabra = palabra.replace('í', 'i')
+    palabra = palabra.replace('ó', 'o')
+    palabra = palabra.replace('ú', 'u')
+    # print(palabra)
+    # print('***'*10)
+    return palabra
 
 
 def prCyan(skk):
@@ -177,7 +216,3 @@ def prUnder(skk):
 
 def prBold(skk):
     print("\033[1m {}\033[00m" .format(skk))
-
-
-def prIN(a, b):
-    print("\033[92m \033[94m %s \t\t %s" % (format(a), format(b)))

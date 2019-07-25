@@ -1,0 +1,13 @@
+{% extends "master.html" %}
+
+{% block head_title %}
+Recurso no encontrado
+{% endblock %}
+
+{% block contenido %}
+<div class="row">
+    <p>
+        {{ values_for_template.error }}
+    </p>
+</div>
+{% endblock %}

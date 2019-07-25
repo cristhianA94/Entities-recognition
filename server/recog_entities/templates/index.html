@@ -14,6 +14,14 @@
 <div class="row">
 	<form action="" method="post">
 		{% csrf_token %}
+		<button class="btn btn-primary mb-12 text-center" id="preubabtn" type="submit" name="prueba">Texto de
+			prueba
+		</button>
+	</form>
+</div>
+<div class="row">
+	<form action="" method="post">
+		{% csrf_token %}
 		<div class="form-group">
 			<label for="textarea">Texto</label>
 			<textarea class="form-control" id="entradaTexto" rows="5" name="palabraClave"></textarea>
@@ -34,9 +42,9 @@
 <div class="row">
 	<h2 class="text-center">Reconocimiento de entidades de SpaCy</h2>
 	<div class="col-xs-12 blanco textnegro font-peque text-justify">
-		<section>
-			<p>
-				{{ mis_entidades }}
+		<section class="row">
+			<p class="text-justify">
+				{{ mis_entidades | safe }}
 			</p>
 		</section>
 	</div>
@@ -63,8 +71,8 @@
 						<tbody class="searchable">
 							{% for tripletas in datos %}
 							<tr>
-								{% for tripleta in tripletas %}
-								<td><a href="{{ tripleta.url }}">{{ tripleta.valor }}</a></td>
+								{% for valor in tripletas %}
+								<td><a href="{{ valor }}">{{ valor }}</a></td>
 								{% endfor %}
 							</tr>
 							{% endfor %}
@@ -101,31 +109,6 @@
 	jQuery(document).ready(function ($) {
 		$(document).ready(function () {
 			$('#example').DataTable();
-			/* 
-			setInterval(function(){
-				$valor = $('#entradaTexto').val();
-				$.ajax({
-					method:"POST",
-					url: '{% url "ajaxPalabra" %}',
-					data: {
-						'valor': $valor,
-					},
-					success:function(datos){
-						console.log("Buscando...", datos);
-						var mensaje = datos.mensaje;
-						var data = datos.texto;
-						console.log("DAtos", data);
-						console.log("mensaje", mensaje);
-						console.log("Cargando...");
-						document.getElementById("textoPlano").innerHTML = data;
-						document.getElementById("entradaTexto").innerHTML = "";
-					}
-				});
-				// $("#entradaTexto").text("");
-			}, 5000);
-			 */
-			// var mensaje = JSON.parse(datos.mensaje);
-			// var data = jQuery.parseJSON(datos.texto);			
 		});
 	});
 </script>

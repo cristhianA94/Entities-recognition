@@ -24,6 +24,8 @@ SECRET_KEY = '-v_a_4a=@+1+d_nvq)+f-tifw5jp3b4g9%91+p_7z!6la5kk#o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# Para la salida que sea especificado
+# DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -55,7 +57,7 @@ ROOT_URLCONF = 'server.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -104,9 +106,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
-##idioma INGLES (en-us)
+# idioma INGLES (en-us)
 LANGUAGE_CODE = 'es-ec'
-#America/Guayaquil
+# America/Guayaquil
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
@@ -120,8 +122,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-#PARA LA CARPETA STATIC
-STATICFILES_DIRS=(
-    os.path.join(BASE_DIR,'static'),
-    #os.path.join(BASE_DIR,'/recog_entities/static/'),
+# PARA LA CARPETA STATIC
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+    # os.path.join(BASE_DIR,'/recog_entities/static/'),
 )
