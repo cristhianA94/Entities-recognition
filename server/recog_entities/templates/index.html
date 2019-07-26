@@ -1,103 +1,128 @@
-{% extends "master.html" %}
-
-{% load static %}
-
-{% block titulo %}
-{{ my_title }}
-{% endblock %}
-
-{% block style %}
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
-{% endblock %}
-
-{% block contenido %}
+{% extends "master.html" %} {% load static %} {% block titulo %} {{ my_title }} {% endblock %} {% block style %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"> {% endblock %} {% block contenido %}
 <div class="row">
-	<form action="" method="post">
-		{% csrf_token %}
-		<button class="btn btn-primary mb-12 text-center" id="preubabtn" type="submit" name="prueba">Texto de
-			prueba
-		</button>
-	</form>
+    <form action="" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <!-- disabled="TRUE" -->
+            <textarea class="form-control" id="entradaTexto" rows="5" name="textoprueba">El caso Arroz Verde es una investigación publicada por el portal digital Mil Hojas. El portal digital reveló un correo electrónico recibido por Pamela Martínez supuesta asesora del expresidente Rafael Correa según Mil Hoja con un documento titulado Receta de Arroz Verde 502.  Según la investigación, el remitente del correo electrónico sería Geraldo Luiz Pereira de Souza, encargado de la administración y finanzas de Odebrecht en Ecuador. El mail demuestra presuntos aportes entregados por empresas multinacionales como Odebrecht al movimiento Alianza País desde noviembre de 2013 a febrero de 201 periodo en el que el expresidente Rafael Correa lideraba esa organización política. Según, Mil Hojas, las donaciones alcanzarían los 11,6 millones de dólares. Las empresas que habrían realizado los aportes son: Constructora Norberto Odebrecht, SK Engineering & Construction, Sinohydro Corporation, Grupo Azul, Telconet, China International Water & Electric Corp-CWE.
+			</textarea>
+        </div>
+        <button class="btn btn-primary mb-12 text-center" id="preubabtn" type="submit" name="prueba">Texto de prueba</button>
+    </form>
 </div>
 <div class="row">
-	<form action="" method="post">
-		{% csrf_token %}
-		<div class="form-group">
-			<label for="textarea">Texto</label>
-			<textarea class="form-control" id="entradaTexto" rows="5" name="palabraClave"></textarea>
-		</div>
-		<button class="btn btn-primary mb-12 text-center" id="buscarbtn" type="submit" name="buscar">Buscar</button>
-	</form>
+    <form action="" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="textarea">Texto</label>
+            <textarea class="form-control" id="entradaTexto" rows="5" name="palabraClave"></textarea>
+        </div>
+        <button class="btn btn-primary mb-12 text-center" id="buscarbtn" type="submit" name="buscar">Buscar</button>
+    </form>
 </div>
-<div class="row">
-	<h2 class="col-xs-12 text-center">TEXTO PLANO</h2>
-	<div class="col-xs-12 gris textnegro font-peque text-justify">
-		<section class="row">
-			<p class="col-xs-12" id="textoPlano">
-				{{ texto }}
-			</p>
-		</section>
-	</div>
+<div class="row" id="hide">
+    <h2 class="text-center">Conteo de Entidades</h2>
+    <div class="col-xs-12 blanco textnegro font-peque text-justify">
+        <section class="row">
+            <table id="tablaconteo" class="table-striped display" width="100%">
+                <thead>
+                    <tr class="success">
+                        {% for clave in claves %}
+                        <th class="text-center md-3">{{ clave }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="searchable">
+                    <tr class="">
+                        {% for valor in valores %}
+                        <td class="text-center md-3">{{ valor }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
 </div>
-<div class="row">
-	<h2 class="text-center">Reconocimiento de entidades de SpaCy</h2>
-	<div class="col-xs-12 blanco textnegro font-peque text-justify">
-		<section class="row">
-			<p class="text-justify">
-				{{ mis_entidades | safe }}
-			</p>
-		</section>
-	</div>
+<br><br>
+<div class="row" id="hide">
+    <h2 class="text-center">Cuales son</h2>
+    <div class="col-xs-12 blanco textnegro font-peque text-justify">
+        <section class="row">
+            {% for valor in dicEntidades %}
+            <p>
+                <b>{{ valor.etiqueta }}</b> {% if valor.etiqueta == "ORG" %} {{ valor.entidad }} {% endif %}
+            </p>
+            <p>
+                <b>{{ valor.etiqueta }}</b> {% if valor.etiqueta == "PER" %} {{ valor.entidad }} {% endif %}
+            </p>
+            <p>
+                <b>{{ valor.etiqueta }}</b> {% if valor.etiqueta == "LOC" %} {{ valor.entidad }} {% endif %}
+            </p>
+            <p>
+                <b>{{ valor.etiqueta }}</b> {% if valor.etiqueta == "MISC" %} {{ valor.entidad }} {% endif %}
+            </p>
+            {% endfor %}
+        </section>
+    </div>
+</div>
+
+<div class="row" id="hide">
+    <h2 class="text-center">Reconocimiento Entidades</h2>
+    <div class="col-xs-12 blanco textnegro font-peque text-justify">
+        <section class="row">
+            <p class="text-justify">
+                {{ mis_entidades | safe }}
+            </p>
+        </section>
+    </div>
 </div>
 <!-- Intro -->
-<div class="row">
-	<!-- /Intro-->
-	<div class="col-xs-12 blanco textnegro">
-		<div class="row">
-			<div class="col-xs-12">
-				<h3 class="text-center">Consulta SPARQL del <b>RDF</b> sobre las <b>entidades encontradas</b>.</h3>
-				<p>Visualización de los Datos recolectados del RDF.</p>
-			</div>
-			<div class="col-xs-12">
-				<section class="datatablas">
-					<table id="example" class="display" width="100%">
-						<thead>
-							<tr class="success">
-								<th>Sujeto</th>
-								<th>Predicado</th>
-								<th>Objeto</th>
-							</tr>
-						</thead>
-						<tbody class="searchable">
-							{% for tripletas in datos %}
-							<tr>
-								{% for valor in tripletas %}
-								<td><a href="{{ valor }}">{{ valor }}</a></td>
-								{% endfor %}
-							</tr>
-							{% endfor %}
-						</tbody>
-						<tfoot>
-							<tr class="info">
-								<th>Sujeto</th>
-								<th>Predicado</th>
-								<th>Objeto</th>
-							</tr>
-						</tfoot>
-					</table>
-				</section>
-			</div>
-		</div>
-	</div>
-	<div class="col-xs-12 textblanco">
-		<div class="row">
-			<div id="palabras"></div>
-		</div>
-	</div>
+<div class="row" id="hide">
+    <div class="col-xs-12 blanco textnegro">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3 class="text-center">Consulta SPARQL del <b>RDF</b> sobre las <b>entidades encontradas</b>.</h3>
+                <p>Visualización de los Datos recolectados del RDF.</p>
+            </div>
+            <div class="col-xs-12">
+                <section class="datatablas">
+                    <table id="example" class="display" width="100%">
+                        <thead>
+                            <tr class="success" id="hide">
+                                <th id="hide">Sujeto</th>
+                                <th id="hide">Predicado</th>
+                                <th id="hide">Objeto</th>
+                            </tr>
+                        </thead>
+                        <tbody class="searchable">
+                            {% for tripletas in datos %}
+                            <tr>
+                                {% for valor in tripletas %}
+                                <td><a href="{{ valor }}">{{ valor }}</a></td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="info">
+                                <th>Sujeto</th>
+                                <th>Predicado</th>
+                                <th>Objeto</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 textblanco">
+        <div class="row">
+            <div id="palabras"></div>
+        </div>
+    </div>
 </div>
-{% endblock %}
-
-{% block script %}
+{% endblock %} {% block script %}
 <script type="text/Javascript" src="https://code.jquery.com/jquery-1.12.4.js"></script>
 <script type="text/Javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 
@@ -106,10 +131,18 @@
 
 
 <script type="text/javascript">
-	jQuery(document).ready(function ($) {
-		$(document).ready(function () {
-			$('#example').DataTable();
-		});
-	});
+    jQuery(document).ready(function($) {
+        $(document).ready(function() {
+            $('#example').DataTable();
+            $('#tablaconteo').DataTable();
+        });
+        $("#hide").hidden();
+    });
 </script>
+<script>
+    $("buscarbtn").click(function() {
+        $("hide").show("slow");
+    });
+</script>
+
 {% endblock %}
