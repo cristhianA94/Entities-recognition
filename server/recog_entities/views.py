@@ -121,7 +121,7 @@ def loadindex(request):
         if indice == len(palabras_limpias):
             break
         else:
-            entidadEtiquetada = '<a type="button" class="links_Enti" href="http://localhost:8080/negociador/page/' + enti + '">' + entidadSpacy[indice]+"</a>"
+            entidadEtiquetada = '<a type=class="links_Enti" href="http://localhost:8080/negociador/page/' + enti + '">' + entidadSpacy[indice]+"</a>"
         # prUnder(entidadEncontrada)
         # prIN(entidadEncontrada, etiqueta)
         mis_entidades = mis_entidades.replace(
