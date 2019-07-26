@@ -59,15 +59,17 @@ def loadindex(request):
             etiquetaEntidad.append(etiqueta)
             dicEntidades.append({"entidad": entidad, "etiqueta": etiqueta})
     count = countDistinct(etiquetaEntidad)
+    # dicEntidades.append({"listas": dicEntidades})
+    # dicEntidades = ["listas", dicEntidades]
+    # dicEntidades = {"listas": dicEntidades}
+    
     keyes = count.keys()
     values = count.values()
-    print(count)
+    
     for elemento in keyes:
         claves.append(elemento)
-        print("elemento\t", elemento)
     for elemento in values:
         valores.append(elemento)
-        print("elemento\t", elemento)
     
     palabras_limpias = []
     for enti in entidadSpacy:
