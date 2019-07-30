@@ -59,9 +59,7 @@ def loadindex(request):
             etiquetaEntidad.append(etiqueta)
             dicEntidades.append({"entidad": entidad, "etiqueta": etiqueta})
     count = countDistinct(etiquetaEntidad)
-    # dicEntidades.append({"listas": dicEntidades})
-    # dicEntidades = ["listas", dicEntidades]
-    # dicEntidades = {"listas": dicEntidades}
+
     
     keyes = count.keys()
     values = count.values()
@@ -123,7 +121,7 @@ def loadindex(request):
         if indice == len(palabras_limpias):
             break
         else:
-            entidadEtiquetada = '<a type=class="links_Enti" href="http://localhost:8080/negociador/page/' + enti + '">' + entidadSpacy[indice]+"</a>"
+            entidadEtiquetada = "<a class=\"links_Enti\" href=\"http://localhost:8080/negociador/page/" + enti + "\">" + entidadSpacy[indice]+"</a>"
         # prUnder(entidadEncontrada)
         # prIN(entidadEncontrada, etiqueta)
         mis_entidades = mis_entidades.replace(
